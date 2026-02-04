@@ -1,25 +1,39 @@
 {
-    "manifest_version": 3,
-    "name": "PLATO 자동 로그인",
-    "version": "1.0",
-    "description": "부산대 PLATO 자동 로그인 확장 프로그램",
-    "permissions": ["storage"],
-    "host_permissions": ["https://plato.pusan.ac.kr/*"],
-    "action": {
-      "default_popup": "popup.html",
-      "default_icon": {
-        "128": "popobyby.png"
-      }
+  "manifest_version": 3,
+  "name": "부산대학교 자동 로그인",
+  "version": "2026.02.04",
+  "description": "PLATO & 학지시 & 공유대학 자동 로그인 프로그램",
+  "permissions": ["storage"],
+  "host_permissions": [
+    "https://plato.pusan.ac.kr/*",
+    "https://login.pusan.ac.kr/*",
+    "https://onestop.pusan.ac.kr/*",
+    "https://www.bbits.ac.kr/*"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": { "128": "favicon.png" }
+  },
+  "icons": { "128": "favicon.png" },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://plato.pusan.ac.kr/*",
+        "https://login.pusan.ac.kr/*",
+        "https://onestop.pusan.ac.kr/*",
+        "https://www.bbits.ac.kr/*"
+      ],
+      "js": ["content.js"],
+      "run_at": "document_end"
     },
-    "content_scripts": [
-      {
-        "matches": ["https://plato.pusan.ac.kr/*"],
-        "js": ["content.js"],
-        "run_at": "document_end"
-      }
-    ],
-    "icons": {
-      "128": "popobyby.png"
+    {
+      "matches": [
+        "https://login.pusan.ac.kr/*",
+        "https://onestop.pusan.ac.kr/*"
+      ],
+      "js": ["event.js"],
+      "run_at": "document_start",
+      "world": "MAIN"
     }
+  ]
 }
-  

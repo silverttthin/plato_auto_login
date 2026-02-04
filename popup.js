@@ -1,49 +1,86 @@
 document.addEventListener("DOMContentLoaded", () => {
-    const idInput = document.getElementById("userId");
-    const pwInput = document.getElementById("userPw");
-    const toggle = document.getElementById("popupToggle");
-    const eyeOn = document.getElementById("eyeOn");
-    const eyeOff = document.getElementById("eyeOff");
-    const eyeBtn = document.getElementById("togglePw");
-    const toast = document.getElementById("toast");
-    chrome.storage.local.get(["userId", "userPw", "autoLogin"], (data) => {
-      if (data.userId) idInput.value = data.userId;
-      if (data.userPw) pwInput.value = data.userPw;
-      toggle.checked = !!data.autoLogin;
+    const fields = {
+        userId: document.getElementById("userId"),
+        userPw: document.getElementById("userPw"),
+        popupToggle: document.getElementById("popupToggle"),
+        platoPopupClose: document.getElementById("platoPopupClose"),
+        hjsId: document.getElementById("hjsId"),
+        hjsPw: document.getElementById("hjsPw"),
+        hjsToggle: document.getElementById("hjsToggle"),
+        hjsPopupClose: document.getElementById("hjsPopupClose"),
+        bbitsId: document.getElementById("bbitsId"),
+        bbitsPw: document.getElementById("bbitsPw"),
+        bbitsToggle: document.getElementById("bbitsToggle"),
+        bbitsPopupClose: document.getElementById("bbitsPopupClose")
+    };
+
+    chrome.storage.local.get(Object.keys(fields), (data) => {
+        Object.keys(fields).forEach(key => {
+            if (!fields[key]) return;
+            if (fields[key].type === "checkbox") {
+                fields[key].checked = !!data[key];
+            } else {
+                fields[key].value = data[key] || "";
+            }
+        });
     });
+
     const save = () => {
-      chrome.storage.local.set({
-        userId: idInput.value,
-        userPw: pwInput.value,
-        autoLogin: toggle.checked
-      });
+        const saveData = {};
+        Object.keys(fields).forEach(key => {
+            if (!fields[key]) return;
+            saveData[key] = fields[key].type === "checkbox" ? fields[key].checked : fields[key].value;
+        });
+        chrome.storage.local.set(saveData);
     };
-    const showToast = (message = "저장되었습니다") => {
-      if (!toast) return;
-      toast.textContent = message;
-      toast.classList.add("show");
-      setTimeout(() => {
-        toast.classList.remove("show");
-      }, 1500);
+
+    const showStatus = (checkboxEl) => {
+        const statusEl = checkboxEl.closest('.checkbox-group').querySelector('.status-msg');
+        if (statusEl) {
+            statusEl.classList.add("show");
+            setTimeout(() => statusEl.classList.remove("show"), 1000);
+        }
     };
-    idInput.addEventListener("input", () => {
-      save();
+
+    [fields.userId, fields.userPw, fields.hjsId, fields.hjsPw, fields.bbitsId, fields.bbitsPw].forEach(el => {
+        el?.addEventListener("input", save);
     });
-    pwInput.addEventListener("input", () => {
-      save();
+
+    Object.keys(fields).forEach(key => {
+        if (fields[key] && fields[key].type === "checkbox") {
+            fields[key].addEventListener("change", () => {
+                save();
+                showStatus(fields[key]);
+            });
+        }
     });
-    toggle.addEventListener("change", () => {
-      save();
-      showToast(toggle.checked ? "자동 로그인 사용 설정됨" : "자동 로그인 해제됨");
+
+    const setupEyeEffect = (btnId, inputEl) => {
+        const btn = document.getElementById(btnId);
+        if (!btn || !inputEl) return;
+        const eyeOn = btn.querySelector(".eye-on");
+        const eyeOff = btn.querySelector(".eye-off");
+        btn.addEventListener("mouseenter", () => {
+            inputEl.type = "text";
+            eyeOn.style.display = "block";
+            eyeOff.style.display = "none";
+        });
+        btn.addEventListener("mouseleave", () => {
+            inputEl.type = "password";
+            eyeOn.style.display = "none";
+            eyeOff.style.display = "block";
+        });
+    };
+    setupEyeEffect("togglePlatoPw", fields.userPw);
+    setupEyeEffect("toggleHjsPw", fields.hjsPw);
+    setupEyeEffect("toggleBbitsPw", fields.bbitsPw);
+
+    document.getElementById("githubLink")?.addEventListener("click", (e) => {
+        e.preventDefault();
+        chrome.tabs.create({ url: "https://github.com/hi-shp/plato_auto_login" });
     });
-    eyeBtn.addEventListener("mouseenter", () => {
-      pwInput.type = "text";
-      eyeOn.style.display = "inline";
-      eyeOff.style.display = "none";
-    });
-    eyeBtn.addEventListener("mouseleave", () => {
-      pwInput.type = "password";
-      eyeOn.style.display = "none";
-      eyeOff.style.display = "inline";
+    document.getElementById("webstoreLink")?.addEventListener("click", (e) => {
+        e.preventDefault();
+        chrome.tabs.create({ url: "https://chromewebstore.google.com/detail/plato-%EC%9E%90%EB%8F%99-%EB%A1%9C%EA%B7%B8%EC%9D%B8/alfanhjkmennhlhicpinigkgkifknamm" });
     });
 });
