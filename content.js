@@ -9,28 +9,44 @@ const attemptLogin = () => {
     "bbitsId", "bbitsPw", "bbitsToggle", "bbitsPopupClose"
   ], (data) => {
     
-    if (host.includes("onestop.pusan.ac.kr")) {
+    if (host.includes("onestop.pusan.ac.kr") || host.includes("login.pusan.ac.kr")) {
       if (data.hjsPopupClose) {
         document.querySelectorAll('div[id^="popup_"], .modal-backdrop').forEach(el => el.remove());
       }
-      if (!data.hjsToggle) return;
-      if (path.includes("/main") || path.includes("/index.do")) return;
-      if (href.includes("/error/entrypoint")) {
-        window.location.replace("https://onestop.pusan.ac.kr/login");
+
+      const pwBtn = document.querySelector('a[href*="changeNextPw"]');
+      if (pwBtn && !pwBtn.dataset.done) {
+        pwBtn.dataset.done = "1";
+        
+        window.dispatchEvent(new CustomEvent("RUN_PNU_FUNC", { 
+          detail: { type: "CHANGE_PW" } 
+        }));
+
+        const clickEvt = new MouseEvent("click", {
+          view: window,
+          bubbles: true,
+          cancelable: true
+        });
+        pwBtn.dispatchEvent(clickEvt);
         return;
       }
-      const loginArea = document.querySelector('#global_login');
-      if (loginArea && !loginArea.dataset.done) {
-        loginArea.dataset.done = "1";
-        window.dispatchEvent(new CustomEvent("RUN_PNU_FUNC", { detail: { type: "ONESTOP_SSO" } }));
+
+      if (host.includes("onestop.pusan.ac.kr")) {
+        if (!data.hjsToggle) return;
+        if (path.includes("/main") || path.includes("/index.do")) return;
+        if (href.includes("/error/entrypoint")) {
+          window.location.replace("https://onestop.pusan.ac.kr/login");
+          return;
+        }
+        const loginArea = document.querySelector('#global_login');
+        if (loginArea && !loginArea.dataset.done) {
+          loginArea.dataset.done = "1";
+          window.dispatchEvent(new CustomEvent("RUN_PNU_FUNC", { detail: { type: "ONESTOP_SSO" } }));
+        }
       }
-      return;
     }
 
     if (host === "login.pusan.ac.kr") {
-      if (data.hjsPopupClose) {
-        document.querySelectorAll('div[id^="popup_"]').forEach(p => p.remove());
-      }
       if (!data.hjsToggle) return;
       const b = document.querySelector('#btnLogin');
       const u = document.querySelector('#login_id') || document.querySelector('#username');
